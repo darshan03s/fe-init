@@ -9,14 +9,24 @@ a {
 
 @utility hide-scrollbar {
   scrollbar-width: none;
+
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
-@utility colors-smooth {
-  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+@utility colors-fast {
+  @apply transition-colors duration-150;
+
   & * {
-    transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    @apply transition-colors duration-150;
+  }
+}
+
+@utility colors-smooth {
+  @apply transition-colors duration-300;
+
+  & * {
+    @apply transition-colors duration-300;
   }
 }
