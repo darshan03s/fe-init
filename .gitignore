@@ -1,5 +1,6 @@
 *.txt
 node_modules
 demo/
+test/
 # Local Netlify folder
 .netlify

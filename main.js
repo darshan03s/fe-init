@@ -12,8 +12,12 @@ const __dirname = path.dirname(__filename);
 const templateDir = path.join(__dirname, "templateFiles");
 
 const templateFiles = {
+    "index.html": await fs.readFile(
+        path.join(templateDir, "index.html"),
+        "utf-8"
+    ),
     "src/index.css": await fs.readFile(
-        path.join(templateDir, "index.css"),
+        path.join(templateDir, "src/index.css"),
         "utf-8"
     ),
     "vite.config.ts": await fs.readFile(
@@ -21,39 +25,51 @@ const templateFiles = {
         "utf-8"
     ),
     "src/main.tsx": await fs.readFile(
-        path.join(templateDir, "main.tsx"),
+        path.join(templateDir, "src/main.tsx"),
         "utf-8"
     ),
     "src/App.tsx": await fs.readFile(
-        path.join(templateDir, "App.tsx"),
+        path.join(templateDir, "src/App.tsx"),
         "utf-8"
     ),
     "src/pages/Home.tsx": await fs.readFile(
-        path.join(templateDir, "Home.tsx"),
+        path.join(templateDir, "src/pages/Home.tsx"),
         "utf-8"
     ),
-    "src/components/GoogleLogo.tsx": await fs.readFile(
-        path.join(templateDir, "GoogleLogo.tsx"),
+    "src/pages/index.ts": await fs.readFile(
+        path.join(templateDir, "src/pages/index.ts"),
         "utf-8"
     ),
-    "src/features/dark-mode/DarkModeContext.ts": await fs.readFile(
-        path.join(templateDir, "DarkModeContext.ts"),
+    "src/features/theme/ThemeContext.ts": await fs.readFile(
+        path.join(templateDir, "src/features/theme/ThemeContext.ts"),
         "utf-8"
     ),
-    "src/features/dark-mode/DarkModeProvider.tsx": await fs.readFile(
-        path.join(templateDir, "DarkModeProvider.tsx"),
+    "src/features/theme/ThemeProvider.tsx": await fs.readFile(
+        path.join(templateDir, "src/features/theme/ThemeProvider.tsx"),
         "utf-8"
     ),
-    "src/features/dark-mode/DarkModeToggleButton.tsx": await fs.readFile(
-        path.join(templateDir, "DarkModeToggleButton.tsx"),
+    "src/features/theme/ThemeToggleButton.tsx": await fs.readFile(
+        path.join(templateDir, "src/features/theme/ThemeToggleButton.tsx"),
         "utf-8"
     ),
-    "src/features/dark-mode/useDarkMode.ts": await fs.readFile(
-        path.join(templateDir, "useDarkMode.ts"),
+    "src/features/theme/useTheme.ts": await fs.readFile(
+        path.join(templateDir, "src/features/theme/useTheme.ts"),
         "utf-8"
     ),
-    "src/features/auth/SignInWithGoogleButton.tsx": await fs.readFile(
-        path.join(templateDir, "SignInWithGoogleButton.tsx"),
+    "src/features/theme/types.ts": await fs.readFile(
+        path.join(templateDir, "src/features/theme/types.ts"),
+        "utf-8"
+    ),
+    "src/features/theme/index.ts": await fs.readFile(
+        path.join(templateDir, "src/features/theme/index.ts"),
+        "utf-8"
+    ),
+    "src/utils/devUtils.ts": await fs.readFile(
+        path.join(templateDir, "src/utils/devUtils.ts"),
+        "utf-8"
+    ),
+    "src/lib/utils.ts": await fs.readFile(
+        path.join(templateDir, "src/lib/utils.ts"),
         "utf-8"
     ),
 };
@@ -116,7 +132,9 @@ async function main() {
                 "install",
                 "tailwindcss",
                 "@tailwindcss/vite",
-                "react-router",
+                "tailwind-merge",
+                "clsx",
+                "react-router-dom",
                 "lucide-react",
             ],
             { stdio: "inherit" }
@@ -161,12 +179,10 @@ async function main() {
         "Creating project structure and updating files..."
     ).start();
     try {
-        await fs.ensureDir("src/components");
         await fs.ensureDir("src/pages");
         await fs.ensureDir("src/utils");
         await fs.ensureDir("src/features");
-        await fs.ensureDir("src/features/auth");
-        await fs.ensureDir("src/features/dark-mode");
+        await fs.ensureDir("src/features/theme");
 
         for (const [file, content] of Object.entries(templateFiles)) {
             await fs.outputFile(path.join(resolvedDir, file), content);
@@ -178,6 +194,7 @@ async function main() {
         await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 2 });
 
         await fs.remove(path.join(resolvedDir, "src/App.css"));
+        await fs.remove(path.join(resolvedDir, "README.md"));
 
         await fs.outputFile(path.join(resolvedDir, ".env"), "");
         const gitignorePath = path.join(resolvedDir, ".gitignore");
