@@ -4,76 +4,9 @@ import path from "path";
 import fs from "fs-extra";
 import ora from "ora";
 import { execa } from "execa";
-import { fileURLToPath } from "url";
 import chalk from "chalk";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const templateDir = path.join(__dirname, "templateFiles");
-
-const templateFiles = {
-    "index.html": await fs.readFile(
-        path.join(templateDir, "index.html"),
-        "utf-8"
-    ),
-    "src/index.css": await fs.readFile(
-        path.join(templateDir, "src/index.css"),
-        "utf-8"
-    ),
-    "vite.config.ts": await fs.readFile(
-        path.join(templateDir, "vite.config.ts"),
-        "utf-8"
-    ),
-    "src/main.tsx": await fs.readFile(
-        path.join(templateDir, "src/main.tsx"),
-        "utf-8"
-    ),
-    "src/App.tsx": await fs.readFile(
-        path.join(templateDir, "src/App.tsx"),
-        "utf-8"
-    ),
-    "src/pages/Home.tsx": await fs.readFile(
-        path.join(templateDir, "src/pages/Home.tsx"),
-        "utf-8"
-    ),
-    "src/pages/index.ts": await fs.readFile(
-        path.join(templateDir, "src/pages/index.ts"),
-        "utf-8"
-    ),
-    "src/features/theme/ThemeContext.ts": await fs.readFile(
-        path.join(templateDir, "src/features/theme/ThemeContext.ts"),
-        "utf-8"
-    ),
-    "src/features/theme/ThemeProvider.tsx": await fs.readFile(
-        path.join(templateDir, "src/features/theme/ThemeProvider.tsx"),
-        "utf-8"
-    ),
-    "src/features/theme/ThemeToggleButton.tsx": await fs.readFile(
-        path.join(templateDir, "src/features/theme/ThemeToggleButton.tsx"),
-        "utf-8"
-    ),
-    "src/features/theme/useTheme.ts": await fs.readFile(
-        path.join(templateDir, "src/features/theme/useTheme.ts"),
-        "utf-8"
-    ),
-    "src/features/theme/types.ts": await fs.readFile(
-        path.join(templateDir, "src/features/theme/types.ts"),
-        "utf-8"
-    ),
-    "src/features/theme/index.ts": await fs.readFile(
-        path.join(templateDir, "src/features/theme/index.ts"),
-        "utf-8"
-    ),
-    "src/utils/devUtils.ts": await fs.readFile(
-        path.join(templateDir, "src/utils/devUtils.ts"),
-        "utf-8"
-    ),
-    "src/lib/utils.ts": await fs.readFile(
-        path.join(templateDir, "src/lib/utils.ts"),
-        "utf-8"
-    ),
-};
+import templateFiles from "./templateFiles.js";
+import packageCommands from "./packageCommands.js";
 
 async function main() {
     console.log(
@@ -88,63 +21,64 @@ async function main() {
             choices: ["npm", "yarn", "pnpm"],
         });
 
-        const { directory } = await inquirer.prompt({
+        let { targetDirectory } = await inquirer.prompt({
             type: "input",
-            name: "directory",
+            name: "targetDirectory",
             message: "Target directory:",
             default: process.cwd(),
         });
 
-        const resolvedDir = path.resolve(directory);
-        const defaultName = path.basename(resolvedDir);
+        targetDirectory = path.resolve(targetDirectory);
+        const defaultProjectName = path.basename(targetDirectory);
 
         const { projectName } = await inquirer.prompt({
             type: "input",
             name: "projectName",
             message: "Project name:",
-            default: defaultName,
+            default: defaultProjectName,
         });
 
         try {
-            await fs.ensureDir(resolvedDir);
-            process.chdir(path.dirname(resolvedDir));
+            await fs.ensureDir(targetDirectory);
+            process.chdir(path.dirname(targetDirectory));
 
             await execa(
                 pkgManager,
                 [
-                    "create",
-                    "vite",
-                    path.basename(resolvedDir),
-                    "--template",
-                    "react-ts",
+                    ...packageCommands["react-ts"],
+                    path.basename(targetDirectory),
                 ],
-                { stdio: "inherit" }
+                {
+                    stdio: "inherit",
+                }
             );
         } catch (err) {
             console.error(err);
             process.exit(1);
         }
 
-        process.chdir(resolvedDir);
+        process.chdir(targetDirectory);
 
         try {
             await execa(
                 pkgManager,
                 [
                     "install",
-                    "tailwindcss",
-                    "@tailwindcss/vite",
-                    "tailwind-merge",
-                    "clsx",
-                    "react-router-dom",
-                    "lucide-react",
+                    ...packageCommands["tailwindcss"],
+                    packageCommands["react-router-dom"],
+                    packageCommands["lucide-react"],
+                    packageCommands["clsx"],
                 ],
                 { stdio: "inherit" }
             );
             try {
-                await execa(pkgManager, ["install", "-D", "@types/node"], {
-                    stdio: "inherit",
-                });
+                await execa(
+                    pkgManager,
+                    ["install", "-D", packageCommands["@types/node"]],
+                    {
+                        stdio: "inherit",
+                    }
+                );
             } catch (typesError) {
                 console.error(typesError);
             }
@@ -155,35 +89,75 @@ async function main() {
 
         await createProjectStructure();
 
-        const { wantsExtras } = await inquirer.prompt({
+        const { addShadcn } = await inquirer.prompt({
             type: "confirm",
-            name: "wantsExtras",
-            message: "Do you want to install additional packages?",
+            name: "addShadcn",
+            message: "Do you want to install Shadcn UI?",
             default: false,
         });
 
-        if (wantsExtras) {
-            const { extraPackages } = await inquirer.prompt({
-                type: "input",
-                name: "extraPackages",
-                message: "Enter additional packages (space-separated):",
-            });
+        if (addShadcn) {
+            await installShadcn();
+        }
 
-            const extras = extraPackages.trim().split(/\s+/);
-            if (extras.length) {
-                if (extras.includes("shadcn")) {
-                    extras.splice(extras.indexOf("shadcn"), 1);
-                    await installShadcn();
-                }
-                try {
-                    if (extras.length) {
-                        await execa(pkgManager, ["install", ...extras], {
-                            stdio: "inherit",
-                        });
-                    }
-                } catch (err) {
-                    console.error(err);
-                }
+        const recommendedPackages = [
+            { name: "zustand", value: packageCommands.zustand },
+            {
+                name: "@tanstack/react-query",
+                value: packageCommands["@tanstack/react-query"],
+            },
+            {
+                name: "react-hook-form",
+                value: packageCommands["react-hook-form"],
+            },
+            { name: "zod", value: packageCommands.zod },
+            { name: "axios", value: packageCommands.axios },
+            { name: "framer-motion", value: packageCommands["framer-motion"] },
+        ];
+
+        const { selectedPackages } = await inquirer.prompt({
+            type: "checkbox",
+            name: "selectedPackages",
+            message: "Select recommended packages to install:",
+            choices: recommendedPackages,
+        });
+
+        if (selectedPackages.length > 0) {
+            try {
+                await execa(pkgManager, ["add", ...selectedPackages], {
+                    stdio: "inherit",
+                });
+                console.log(
+                    chalk.green(
+                        `Successfully installed: ${selectedPackages.join(
+                            ", "
+                        )}\n`
+                    )
+                );
+            } catch (err) {
+                console.error(chalk.red("Error installing packages:"), err);
+            }
+        }
+
+        const { extraPackages } = await inquirer.prompt({
+            type: "input",
+            name: "extraPackages",
+            message: "Enter additional packages (space-separated):",
+        });
+
+        const extras = extraPackages.trim().split(/\s+/);
+        if (extras.length) {
+            try {
+                await execa(pkgManager, ["install", ...extras], {
+                    stdio: "inherit",
+                });
+                console.log(
+                    chalk.green(
+                        `Successfully installed: ${extras.join(", ")}\n`
+                    )
+                );
+            } catch (err) {
+                console.error(err);
             }
         }
 
@@ -192,15 +166,15 @@ async function main() {
                 await execa("npx", ["shadcn@latest", "init"], {
                     stdio: "inherit",
                 });
-                const pkgJsonPath = path.join(resolvedDir, "package.json");
+                const pkgJsonPath = path.join(targetDirectory, "package.json");
                 const pkgJson = await fs.readJson(pkgJsonPath);
                 pkgJson.scripts["shadcn:add"] = "npx shadcn@latest add";
                 await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 4 });
             } else if (pkgManager === "yarn") {
-                await execa("yarn", ["add", "shadcn@latest"], {
+                await execa("yarn", ["shadcn@latest", "init"], {
                     stdio: "inherit",
                 });
-                const pkgJsonPath = path.join(resolvedDir, "package.json");
+                const pkgJsonPath = path.join(targetDirectory, "package.json");
                 const pkgJson = await fs.readJson(pkgJsonPath);
                 pkgJson.scripts["shadcn:add"] = "yarn shadcn@latest add";
                 await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 4 });
@@ -208,14 +182,14 @@ async function main() {
                 await execa("pnpm", ["dlx", "shadcn@latest", "init"], {
                     stdio: "inherit",
                 });
-                const pkgJsonPath = path.join(resolvedDir, "package.json");
+                const pkgJsonPath = path.join(targetDirectory, "package.json");
                 const pkgJson = await fs.readJson(pkgJsonPath);
                 pkgJson.scripts["shadcn:add"] = "pnpm dlx shadcn@latest add";
                 await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 4 });
             }
             console.log(
                 chalk.green(
-                    `Shadcn UI installed successfully!\nUse \`${pkgManager} shadcn:add\` to add components to your project.`
+                    `Shadcn UI installed successfully!\nUse \`${pkgManager} shadcn:add\` to add components to your project.\n`
                 )
             );
         }
@@ -231,19 +205,22 @@ async function main() {
                 await fs.ensureDir("src/features/theme");
 
                 for (const [file, content] of Object.entries(templateFiles)) {
-                    await fs.outputFile(path.join(resolvedDir, file), content);
+                    await fs.outputFile(
+                        path.join(targetDirectory, file),
+                        content
+                    );
                 }
 
-                const pkgJsonPath = path.join(resolvedDir, "package.json");
+                const pkgJsonPath = path.join(targetDirectory, "package.json");
                 const pkgJson = await fs.readJson(pkgJsonPath);
                 pkgJson.name = projectName;
                 await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 4 });
 
-                await fs.remove(path.join(resolvedDir, "src/App.css"));
-                await fs.remove(path.join(resolvedDir, "README.md"));
+                await fs.remove(path.join(targetDirectory, "src/App.css"));
+                await fs.remove(path.join(targetDirectory, "README.md"));
 
-                await fs.outputFile(path.join(resolvedDir, ".env"), "");
-                const gitignorePath = path.join(resolvedDir, ".gitignore");
+                await fs.outputFile(path.join(targetDirectory, ".env"), "");
+                const gitignorePath = path.join(targetDirectory, ".gitignore");
                 const gitignoreContent = await fs.readFile(
                     gitignorePath,
                     "utf-8"
@@ -251,7 +228,7 @@ async function main() {
                 await fs.writeFile(gitignorePath, gitignoreContent + "\n.env");
 
                 const tsConfigAppPath = path.join(
-                    resolvedDir,
+                    targetDirectory,
                     "tsconfig.app.json"
                 );
 
@@ -269,9 +246,12 @@ async function main() {
                     "@/*": ["./src/*"],
                 };
 
-                await fs.writeJson(tsConfigAppPath, tsConfigApp, { spaces: 2 });
+                await fs.writeJson(tsConfigAppPath, tsConfigApp, { spaces: 4 });
 
-                const tsConfigPath = path.join(resolvedDir, "tsconfig.json");
+                const tsConfigPath = path.join(
+                    targetDirectory,
+                    "tsconfig.json"
+                );
 
                 const tsConfigContent = await fs.readFile(
                     tsConfigPath,
@@ -289,7 +269,7 @@ async function main() {
                     "@/*": ["./src/*"],
                 };
 
-                await fs.writeJson(tsConfigPath, tsConfig, { spaces: 2 });
+                await fs.writeJson(tsConfigPath, tsConfig, { spaces: 4 });
 
                 editSpinner.succeed("Project structure and files updated.");
             } catch (err) {
@@ -300,7 +280,7 @@ async function main() {
         }
 
         console.log(
-            `\n\u2705 Setup complete! Navigate to ${resolvedDir} and start coding.\n`
+            `\n\u2705 Setup complete! Navigate to ${targetDirectory} and start coding.\n`
         );
     } catch (error) {
         if (error.name === "ExitPromptError") {
