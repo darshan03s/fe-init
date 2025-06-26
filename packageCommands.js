@@ -1,6 +1,7 @@
 const packageCommands = {
     "react-ts": ["create", "vite", "--template", "react-ts"],
     tailwindcss: ["tailwindcss", "@tailwindcss/vite"],
+    "tailwind-merge": "tailwind-merge",
     "react-router-dom": "react-router-dom",
     "lucide-react": "lucide-react",
     clsx: "clsx",

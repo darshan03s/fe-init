@@ -44,10 +44,7 @@ async function main() {
 
             await execa(
                 pkgManager,
-                [
-                    ...packageCommands["react-ts"],
-                    path.basename(targetDirectory),
-                ],
+                [...packageCommands["react-ts"], path.basename(targetDirectory)],
                 {
                     stdio: "inherit",
                 }
@@ -68,17 +65,14 @@ async function main() {
                     packageCommands["react-router-dom"],
                     packageCommands["lucide-react"],
                     packageCommands["clsx"],
+                    packageCommands["tailwind-merge"],
                 ],
                 { stdio: "inherit" }
             );
             try {
-                await execa(
-                    pkgManager,
-                    ["install", "-D", packageCommands["@types/node"]],
-                    {
-                        stdio: "inherit",
-                    }
-                );
+                await execa(pkgManager, ["install", "-D", packageCommands["@types/node"]], {
+                    stdio: "inherit",
+                });
             } catch (typesError) {
                 console.error(typesError);
             }
@@ -124,15 +118,11 @@ async function main() {
 
         if (selectedPackages.length > 0) {
             try {
-                await execa(pkgManager, ["add", ...selectedPackages], {
+                await execa(pkgManager, ["install", ...selectedPackages], {
                     stdio: "inherit",
                 });
                 console.log(
-                    chalk.green(
-                        `Successfully installed: ${selectedPackages.join(
-                            ", "
-                        )}\n`
-                    )
+                    chalk.green(`Successfully installed: ${selectedPackages.join(", ")}\n`)
                 );
             } catch (err) {
                 console.error(chalk.red("Error installing packages:"), err);
@@ -151,11 +141,7 @@ async function main() {
                 await execa(pkgManager, ["install", ...extras], {
                     stdio: "inherit",
                 });
-                console.log(
-                    chalk.green(
-                        `Successfully installed: ${extras.join(", ")}\n`
-                    )
-                );
+                console.log(chalk.green(`Successfully installed: ${extras.join(", ")}\n`));
             } catch (err) {
                 console.error(err);
             }
@@ -195,9 +181,7 @@ async function main() {
         }
 
         async function createProjectStructure() {
-            const editSpinner = ora(
-                "Creating project structure and updating files..."
-            ).start();
+            const editSpinner = ora("Creating project structure and updating files...").start();
             try {
                 await fs.ensureDir("src/pages");
                 await fs.ensureDir("src/utils");
@@ -205,10 +189,7 @@ async function main() {
                 await fs.ensureDir("src/features/theme");
 
                 for (const [file, content] of Object.entries(templateFiles)) {
-                    await fs.outputFile(
-                        path.join(targetDirectory, file),
-                        content
-                    );
+                    await fs.outputFile(path.join(targetDirectory, file), content);
                 }
 
                 const pkgJsonPath = path.join(targetDirectory, "package.json");
@@ -221,23 +202,16 @@ async function main() {
 
                 await fs.outputFile(path.join(targetDirectory, ".env"), "");
                 const gitignorePath = path.join(targetDirectory, ".gitignore");
-                const gitignoreContent = await fs.readFile(
-                    gitignorePath,
-                    "utf-8"
-                );
+                const gitignoreContent = await fs.readFile(gitignorePath, "utf-8");
                 await fs.writeFile(gitignorePath, gitignoreContent + "\n.env");
 
-                const tsConfigAppPath = path.join(
-                    targetDirectory,
-                    "tsconfig.app.json"
-                );
+                const tsConfigAppPath = path.join(targetDirectory, "tsconfig.app.json");
 
-                const tsConfigAppContent = await fs.readFile(
-                    tsConfigAppPath,
-                    "utf-8"
+                const tsConfigAppContent = await fs.readFile(tsConfigAppPath, "utf-8");
+                const tsConfigAppJsonWithoutComments = tsConfigAppContent.replace(
+                    /\/\*[\s\S]*?\*\//g,
+                    ""
                 );
-                const tsConfigAppJsonWithoutComments =
-                    tsConfigAppContent.replace(/\/\*[\s\S]*?\*\//g, "");
                 const tsConfigApp = JSON.parse(tsConfigAppJsonWithoutComments);
 
                 tsConfigApp.compilerOptions = tsConfigApp.compilerOptions || {};
@@ -248,15 +222,9 @@ async function main() {
 
                 await fs.writeJson(tsConfigAppPath, tsConfigApp, { spaces: 4 });
 
-                const tsConfigPath = path.join(
-                    targetDirectory,
-                    "tsconfig.json"
-                );
+                const tsConfigPath = path.join(targetDirectory, "tsconfig.json");
 
-                const tsConfigContent = await fs.readFile(
-                    tsConfigPath,
-                    "utf-8"
-                );
+                const tsConfigContent = await fs.readFile(tsConfigPath, "utf-8");
                 const tsConfigJsonWithoutComments = tsConfigContent.replace(
                     /\/\*\[\s\S]*?\*\//g,
                     ""
@@ -279,9 +247,7 @@ async function main() {
             }
         }
 
-        console.log(
-            `\n\u2705 Setup complete! Navigate to ${targetDirectory} and start coding.\n`
-        );
+        console.log(`\n\u2705 Setup complete! Navigate to ${targetDirectory} and start coding.\n`);
     } catch (error) {
         if (error.name === "ExitPromptError") {
             console.log(chalk.yellow("\n👋 Setup cancelled by user."));
