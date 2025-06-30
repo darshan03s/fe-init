@@ -4,12 +4,12 @@ import fs from 'fs-extra';
 import chalk from 'chalk';
 import getChoices from './getChoices.js';
 import {
-    createProjectStructure,
     createViteProject,
     installBasePackages,
     installExtraPackages,
     installSelectedPackages,
     installShadcn,
+    updateProjectStructure,
 } from './utils.js';
 
 export let pkgManager;
@@ -43,7 +43,7 @@ async function main() {
         await installBasePackages();
 
         // Update project structure before shadcn and extra packages
-        await createProjectStructure();
+        await updateProjectStructure();
 
         if (addShadcn) {
             await installShadcn();

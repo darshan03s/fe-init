@@ -9,13 +9,13 @@ export type ThemeToggleButtonProps = HTMLAttributes<HTMLButtonElement> & {
 };
 
 const ThemeToggleButton = forwardRef<HTMLButtonElement, ThemeToggleButtonProps>(
-    ({ className, iconSize = 15, ...rest }, ref) => {
+    ({ className, iconSize = 14, ...rest }, ref) => {
         const { theme, setTheme } = useTheme();
         return (
             <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 ref={ref}
-                className={cn("rounded-full size-8 bg-black text-white dark:bg-white dark:text-black flex justify-center items-center colors-smooth", className)}
+                className={cn("rounded-full size-7 bg-black text-white dark:bg-white dark:text-black flex justify-center items-center colors-smooth", className)}
                 {...rest}>
                 {theme === "dark" ? <Sun size={iconSize} /> : <Moon size={iconSize} />}
             </button>

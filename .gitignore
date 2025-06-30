@@ -4,3 +4,4 @@ demo/
 test/
 # Local Netlify folder
 .netlify
+vite-project/

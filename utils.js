@@ -8,7 +8,7 @@ import templateFiles, { templateDir } from './templateFiles.js';
 import handlebars from 'handlebars';
 
 export async function createViteProject() {
-    console.log(chalk.green('Creating Vite project...\n'));
+    console.log(chalk.green('\nCreating Vite project...\n'));
 
     try {
         await execa(
@@ -29,7 +29,7 @@ export async function createViteProject() {
 }
 
 export async function installBasePackages() {
-    console.log(chalk.green('Installing base packages...\n'));
+    console.log(chalk.green('\nInstalling base packages...\n'));
     try {
         const installArgs = [
             ...packageCommands['tailwindcss'],
@@ -84,6 +84,7 @@ export async function installPackages(packages) {
 }
 
 export async function installSelectedPackages() {
+    console.log(chalk.green('\nInstalling selected packages...\n'));
     await installPackages(selectedPackages);
     if (selectedPackages.includes(packageCommands['react-scan'])) {
         const mainTsxHbsPath = path.join(templateDir, 'src/main.tsx.hbs');
@@ -96,10 +97,12 @@ export async function installSelectedPackages() {
 }
 
 export async function installExtraPackages(extras) {
+    console.log(chalk.green('\nInstalling extra packages...\n'));
     await installPackages(extras);
 }
 
 export async function installShadcn() {
+    console.log(chalk.green('\nInstalling Shadcn UI...\n'));
     if (pkgManager === 'npm') {
         await execa('npx', ['shadcn@latest', 'init'], {
             stdio: 'inherit',
@@ -135,12 +138,13 @@ export async function installShadcn() {
     );
 }
 
-export async function createProjectStructure() {
-    console.log(chalk.green('Creating project structure and updating files...\n'));
+export async function updateProjectStructure() {
+    console.log(chalk.green('\nUpdating project structure...\n'));
     try {
         await fs.ensureDir('src/pages');
         await fs.ensureDir('src/utils');
         await fs.ensureDir('src/features');
+        await fs.ensureDir('src/components');
         await fs.ensureDir('src/features/theme');
 
         for (const [file, content] of Object.entries(templateFiles)) {
@@ -150,6 +154,7 @@ export async function createProjectStructure() {
         const pkgJsonPath = path.join(targetDirectory, 'package.json');
         const pkgJson = await fs.readJson(pkgJsonPath);
         pkgJson.name = projectName;
+        pkgJson.scripts['dev'] = 'vite --host';
         await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 4 });
 
         await fs.remove(path.join(targetDirectory, 'src/App.css'));
