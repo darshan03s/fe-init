@@ -3,22 +3,25 @@ import fs from 'fs-extra';
 import { execa } from 'execa';
 import packageCommands from './packageCommands.js';
 import chalk from 'chalk';
-import {
-    extraPackages,
-    pkgManager,
-    projectName,
-    selectedPackages,
-    targetDirectory,
-} from './main.js';
+import { pkgManager, projectName, selectedPackages, targetDirectory } from './main.js';
 import templateFiles, { templateDir } from './templateFiles.js';
 import handlebars from 'handlebars';
 
 export async function createViteProject() {
     console.log(chalk.green('Creating Vite project...\n'));
+
     try {
-        await execa(pkgManager, [...packageCommands['react-ts'], path.basename(targetDirectory)], {
-            stdio: 'inherit',
-        });
+        await execa(
+            pkgManager,
+            [...packageCommands['react-ts'][pkgManager], path.basename(targetDirectory)],
+            {
+                stdio: 'inherit',
+            }
+        );
+        await fs.outputFile(
+            path.join(targetDirectory, '.npmrc'),
+            'auto-install-peers=true\nenable-pre-post-scripts=true'
+        );
     } catch (err) {
         console.error(err);
         process.exit(1);
@@ -28,22 +31,32 @@ export async function createViteProject() {
 export async function installBasePackages() {
     console.log(chalk.green('Installing base packages...\n'));
     try {
-        await execa(
-            pkgManager,
-            [
-                'install',
-                ...packageCommands['tailwindcss'],
-                packageCommands['react-router-dom'],
-                packageCommands['lucide-react'],
-                packageCommands['clsx'],
-                packageCommands['tailwind-merge'],
-            ],
-            { stdio: 'inherit' }
-        );
+        const installArgs = [
+            ...packageCommands['tailwindcss'],
+            packageCommands['react-router-dom'],
+            packageCommands['lucide-react'],
+            packageCommands['clsx'],
+            packageCommands['tailwind-merge'],
+        ];
+        if (pkgManager === 'npm') {
+            installArgs.push('--legacy-peer-deps');
+        }
+        if (pkgManager === 'pnpm' || pkgManager === 'yarn') {
+            installArgs.unshift('add');
+        } else {
+            installArgs.unshift('install');
+        }
+        await execa(pkgManager, installArgs, { stdio: 'inherit' });
         try {
-            await execa(pkgManager, ['install', '-D', packageCommands['@types/node']], {
-                stdio: 'inherit',
-            });
+            if (pkgManager === 'pnpm' || pkgManager === 'yarn') {
+                await execa(pkgManager, ['add', '-D', packageCommands['@types/node']], {
+                    stdio: 'inherit',
+                });
+            } else {
+                await execa(pkgManager, ['install', '-D', packageCommands['@types/node']], {
+                    stdio: 'inherit',
+                });
+            }
         } catch (typesError) {
             console.error(typesError);
         }
@@ -55,9 +68,15 @@ export async function installBasePackages() {
 
 export async function installPackages(packages) {
     try {
-        await execa(pkgManager, ['install', ...packages], {
-            stdio: 'inherit',
-        });
+        if (pkgManager === 'pnpm' || pkgManager === 'yarn') {
+            await execa(pkgManager, ['add', ...packages], {
+                stdio: 'inherit',
+            });
+        } else {
+            await execa(pkgManager, ['install', ...packages], {
+                stdio: 'inherit',
+            });
+        }
     } catch (err) {
         console.error(chalk.red('Error installing package:'), err);
         process.exit(1);
@@ -76,8 +95,8 @@ export async function installSelectedPackages() {
     }
 }
 
-export async function installExtraPackages() {
-    await installPackages(extraPackages);
+export async function installExtraPackages(extras) {
+    await installPackages(extras);
 }
 
 export async function installShadcn() {
@@ -90,12 +109,15 @@ export async function installShadcn() {
         pkgJson.scripts['shadcn:add'] = 'npx shadcn@latest add';
         await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 4 });
     } else if (pkgManager === 'yarn') {
-        await execa('yarn', ['shadcn@latest', 'init'], {
+        await execa('yarn', ['add', 'shadcn@latest'], {
+            stdio: 'inherit',
+        });
+        await execa('yarn', ['shadcn', 'init'], {
             stdio: 'inherit',
         });
         const pkgJsonPath = path.join(targetDirectory, 'package.json');
         const pkgJson = await fs.readJson(pkgJsonPath);
-        pkgJson.scripts['shadcn:add'] = 'yarn shadcn@latest add';
+        pkgJson.scripts['shadcn:add'] = 'yarn shadcn add';
         await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 4 });
     } else if (pkgManager === 'pnpm') {
         await execa('pnpm', ['dlx', 'shadcn@latest', 'init'], {
@@ -134,10 +156,6 @@ export async function createProjectStructure() {
         await fs.remove(path.join(targetDirectory, 'README.md'));
 
         await fs.outputFile(path.join(targetDirectory, '.env'), '');
-        await fs.outputFile(
-            path.join(targetDirectory, '.npmrc'),
-            'auto-install-peers=true\nenable-pre-post-scripts=true'
-        );
         const gitignorePath = path.join(targetDirectory, '.gitignore');
         const gitignoreContent = await fs.readFile(gitignorePath, 'utf-8');
         await fs.writeFile(gitignorePath, gitignoreContent + '\n.env');

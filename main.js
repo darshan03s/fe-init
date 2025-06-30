@@ -54,8 +54,8 @@ async function main() {
         }
 
         const extras = extraPackages.trim().split(/\s+/);
-        if (extras.length) {
-            await installExtraPackages();
+        if (extras.length > 0 && extras[0] !== '') {
+            await installExtraPackages(extras);
         }
 
         console.log(`\n\u2705 Setup complete! Navigate to ${targetDirectory} and start coding.\n`);

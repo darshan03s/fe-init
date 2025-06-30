@@ -5,19 +5,26 @@
     "main": "main.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node main.js"
+        "start": "node main.js",
+        "start:clean": "rm -rf && node main.js"
     },
     "type": "module",
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@tailwindcss/vite": "^4.1.11",
         "chalk": "^5.4.1",
+        "clsx": "^2.1.1",
         "execa": "^9.5.3",
         "fs-extra": "^11.3.0",
         "handlebars": "^4.7.8",
         "inquirer": "^12.6.2",
-        "path": "^0.12.7"
+        "lucide-react": "^0.525.0",
+        "path": "^0.12.7",
+        "react-router-dom": "^7.6.3",
+        "tailwind-merge": "^3.3.1",
+        "tailwindcss": "^4.1.11"
     },
     "devDependencies": {
         "@eslint/css": "^0.8.1",

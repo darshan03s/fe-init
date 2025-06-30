@@ -1,5 +1,9 @@
 const packageCommands = {
-    'react-ts': ['create', 'vite', '--template', 'react-ts'],
+    'react-ts': {
+        npm: ['create', 'vite@latest', '--', '--template', 'react-ts', '-y'],
+        pnpm: ['create', 'vite', '--template', 'react-ts'],
+        yarn: ['create', 'vite', '--template', 'react-ts'],
+    },
     tailwindcss: ['tailwindcss', '@tailwindcss/vite'],
     'tailwind-merge': 'tailwind-merge',
     'react-router-dom': 'react-router-dom',
