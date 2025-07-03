@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "theme.css";
+@import "./theme.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -23,9 +23,4 @@ a {
   &::-webkit-scrollbar {
     display: none;
   }
-}
-
-@utility scrollbar-styles {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-scrollbar) var(--color-scrollbar-background);
 }

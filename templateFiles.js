@@ -16,7 +16,6 @@ const templateFilesObject = {
     'src/App.tsx': 'src/App.tsx',
     'src/pages/Home.tsx': 'src/pages/Home.tsx',
     'src/components/Layout.tsx': 'src/components/Layout.tsx',
-    'src/components/Page.tsx': 'src/components/Page.tsx',
     'src/pages/index.ts': 'src/pages/index.ts',
     'src/features/theme/ThemeContext.ts': 'src/features/theme/ThemeContext.ts',
     'src/features/theme/ThemeProvider.tsx': 'src/features/theme/ThemeProvider.tsx',
