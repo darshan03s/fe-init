@@ -10,11 +10,13 @@ export const templateDir = path.join(__dirname, 'templateFiles');
 const templateFilesObject = {
     'index.html': 'index.html',
     'src/index.css': 'src/index.css',
+    'src/theme.css': 'src/theme.css',
     'vite.config.ts': 'vite.config.ts',
     'src/main.tsx': 'src/main.tsx',
     'src/App.tsx': 'src/App.tsx',
     'src/pages/Home.tsx': 'src/pages/Home.tsx',
     'src/components/Layout.tsx': 'src/components/Layout.tsx',
+    'src/components/Page.tsx': 'src/components/Page.tsx',
     'src/pages/index.ts': 'src/pages/index.ts',
     'src/features/theme/ThemeContext.ts': 'src/features/theme/ThemeContext.ts',
     'src/features/theme/ThemeProvider.tsx': 'src/features/theme/ThemeProvider.tsx',

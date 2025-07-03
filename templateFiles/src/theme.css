@@ -1,0 +1,33 @@
+@theme inline {
+    --color-background: var(--color-background);
+    --color-foreground: var(--color-foreground);
+    --color-border: var(--color-border);
+    --color-button-background: var(--color-button-background);
+    --color-button-foreground: var(--color-button-foreground);
+    --color-button-hover: var(--color-button-hover);
+    --color-active-tab: var(--color-active-tab);
+}
+
+:root {
+    --color-background: var(--color-white);
+    --color-foreground: var(--color-black);
+    --color-border: var(--color-black);
+    --color-button-background: var(--color-black);
+    --color-button-foreground: var(--color-white);
+    --color-button-hover: var(--color-neutral-700);
+    --color-active-tab: var(--color-neutral-700);
+    --color-scrollbar: var(--color-neutral-500);
+    --color-scrollbar-background: var(--color-background);
+}
+
+.dark {
+    --color-background: var(--color-black);
+    --color-foreground: var(--color-white);
+    --color-border: var(--color-white);
+    --color-button-background: var(--color-white);
+    --color-button-foreground: var(--color-black);
+    --color-button-hover: var(--color-neutral-300);
+    --color-active-tab: var(--color-neutral-300);
+    --color-scrollbar: var(--color-neutral-500);
+    --color-scrollbar-background: var(--color-background);
+}
