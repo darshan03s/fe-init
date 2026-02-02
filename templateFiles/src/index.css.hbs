@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+button,
+a {
+  cursor: pointer;
+}
+
+@utility hide-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+{{#unless addShadcn}}
+@theme {
+  --background: var(--color-white);
+  --foreground: var(--color-black);
+}
+
+.dark {
+  --background: var(--color-black);
+  --foreground: var(--color-white);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+{{/unless}}

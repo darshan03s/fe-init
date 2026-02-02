@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import { execa } from 'execa';
 import packageCommands from './packageCommands.js';
 import chalk from 'chalk';
-import { pkgManager, projectName, selectedPackages, targetDirectory } from './main.js';
+import { addShadcn, pkgManager, projectName, selectedPackages, targetDirectory } from './main.js';
 import templateFiles, { templateDir } from './templateFiles.js';
 import handlebars from 'handlebars';
 
@@ -192,6 +192,15 @@ export async function updateProjectStructure() {
         };
 
         await fs.writeJson(tsConfigPath, tsConfig, { spaces: 4 });
+
+        if (addShadcn) {
+            const indexCssHbsPath = path.join(templateDir, 'src/index.css.hbs');
+            const indexCssHbs = await fs.readFile(indexCssHbsPath, 'utf-8');
+            const indexCssHbsTemplate = handlebars.compile(indexCssHbs);
+            const indexCssHbsContent = indexCssHbsTemplate({ addReactScan: true });
+            const indexCssPath = path.join(targetDirectory, 'src/index.css');
+            await fs.writeFile(indexCssPath, indexCssHbsContent);
+        }
     } catch (err) {
         console.error(err);
         process.exit(1);
